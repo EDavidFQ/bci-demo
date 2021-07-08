@@ -7,7 +7,7 @@ import javax.validation.constraints.Pattern;
 
 @Getter
 @Setter
-public class Phone {
+public class PhoneRequest {
 
     @Pattern(regexp = "^\\d{7,9}$", message = "Number field contains between 7 to 9 digits")
     private String number;

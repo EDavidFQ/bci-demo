@@ -24,6 +24,6 @@ public class UserRequest {
     private String password;
 
     @NotEmpty
-    private List<Phone> phones;
+    private List<PhoneRequest> phones;
 
 }

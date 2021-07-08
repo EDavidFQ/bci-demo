@@ -6,12 +6,17 @@ import com.bci.demo.user.builder.UserBuilder;
 import com.bci.demo.user.business.UserService;
 import com.bci.demo.user.model.api.UserRequest;
 import com.bci.demo.user.model.api.UserResponse;
+import com.bci.demo.user.model.entity.Phone;
 import com.bci.demo.user.model.entity.User;
+import com.bci.demo.user.repository.PhoneRepository;
 import com.bci.demo.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -20,6 +25,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserBuilder userBuilder;
     private final UserRepository userRepository;
+    private final PhoneRepository phoneRepository;
     private final QueueClient queueClient;
 
     @Override
@@ -27,6 +33,8 @@ public class UserServiceImpl implements UserService {
 
         this.validateEmail(userRequest.getEmail());
         User user = userRepository.save(userBuilder.buildUser(userRequest));
+        this.savePhone(userBuilder.getPhones(userRequest.getPhones()), user.getId());
+
         log.info("Email {} has been saved", user.getEmail());
         this.sendMessage(user.getEmail(), userRequest.getPhones().get(0).getNumber());
 
@@ -37,6 +45,11 @@ public class UserServiceImpl implements UserService {
         if (userRepository.findFirstByEmail(email) != null) {
             throw new RegisteredEmailException(email);
         }
+    }
+
+    private void savePhone(List<Phone> phones, UUID userId) {
+        phones.forEach(p -> p.setUserId(userId));
+        phoneRepository.saveAll(phones);
     }
 
     @Async
